@@ -54,30 +54,46 @@ end
 
 # save students to csv file
 def save_students
-  # open the file for writing
-  file = File.open("students.csv", "w")
-  # iterate over the array of students
-  @students.each do |student|
-    student_data = [student[:name], student[:cohort]]
-    csv_line = student_data.join(",")
-    file.puts csv_line
+  print "Save as: "
+  user_file = gets.chomp
+  # simple check if file is the correct format
+  if user_file.empty? or !user_file.include?(".csv")
+    puts "Please type a valid name. The file must be .csv"
+    return
   end
-  file.close
+  # open the file for writing no need to close it here
+  File.open(user_file, "w") do |file|
+  # iterate over the array of students
+    @students.each do |student|
+      student_data = [student[:name], student[:cohort]]
+      csv_line = student_data.join(",")
+      file.puts csv_line
+    end
+  end
+  puts "Student list saved successfully"
 end
 
 def load_students(filename = "students.csv" )
-  file = File.open(filename, "r")
-  file.readlines.each do |line|
-    name, cohort = line.chomp.split(",")
-    add_students(name,cohort.to_sym)
+  print "what file do you want to load: > "
+  user_file = gets.chomp
+  # try this block of code 
+  begin 
+    #if user doesnt load file -> load the default file
+    file = File.open(user_file.empty? ? filename : user_file , "r")
+    file.readlines.each do |line|
+      name, cohort = line.chomp.split(",")
+      add_students(name,cohort.to_sym)
+    end
+    file.close
+    puts "Student loaded saved successfully"
+  rescue #if file doesn't exist trow an error
+    puts "Sorry, #{user_file} doesn't exist."
   end
-  file.close
 end
 
 def try_load_students
   filename = ARGV.first # first argument from the command line
   return if filename.nil? # get out of the method if it isn't given
-
   if File.exists?(filename) # if it exists
     load_students(filename)
     puts "Loaded #{@students.count} from #{filename}"
@@ -110,6 +126,8 @@ def interactive_menu
     process(STDIN.gets.chomp)
   end
 end
+
+#load_students # uncoment this to load on start 
 try_load_students
 interactive_menu
 
